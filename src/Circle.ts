@@ -1,7 +1,8 @@
 import Renderer from "./Renderer";
 import Vector2 from "./Vector2";
+import IRenderObject from "./RenderObject"
 
-export default class Circle {
+export default class Circle implements IRenderObject {
   private _renderer: Renderer
   private _radius: number
   private _center: Vector2
