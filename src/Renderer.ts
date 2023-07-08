@@ -1,12 +1,16 @@
+import Circle from "./Circle"
+
 export default class Renderer {
   _width = 800
   _height = 600
-  _canvas: HTMLCanvasElement
-  _ctx: CanvasRenderingContext2D
-  _img: ImageData
-  _data32: Uint32Array
+  private _canvas: HTMLCanvasElement
+  private _ctx: CanvasRenderingContext2D
+  private _img: ImageData
+  private _data32: Uint32Array
+  private _circle: Circle
 
   constructor() {
+    this._circle = new Circle(this)
     this._canvas = document.querySelector('canvas')!
     if (!this._canvas) {
       throw 'Canvas not found'
@@ -21,17 +25,19 @@ export default class Renderer {
     this._data32 = new Uint32Array(this._img.data.buffer)
   }
 
-
-  clear(color: string | CanvasGradient | CanvasPattern = 'white') {
-    this._ctx.fillStyle = color
-    this._ctx.fillRect(0, 0, this._canvas.width, this._canvas.height)
+  private clear() {
+    for(var i = -(this._height / 2); i < (this._height / 2); i++) {
+      for(var j = -(this._width); j < (this._width / 2); j++) {
+        this.putPixel(j, i, 0xFFFFFFFF);
+      }
+    }
   }
 
-  _beginFrame() {
+  private _beginFrame() {
 
   }
 
-  _endFrame() {
+  private _endFrame() {
     this._ctx.putImageData(this._img, 0, 0);
   }
 
@@ -49,34 +55,15 @@ export default class Renderer {
     this._data32[screenX + screenY * this._canvas.width] = color
   }
 
-  render() {
+  public render() {
+    requestAnimationFrame(this._render.bind(this))
+  }
+
+  private _render(timestamp: number) {
     this.clear()
     this._beginFrame()
-    // Quadrant 1
-    for(var i = 0; i < (this._canvas.height / 2); i++) {
-      for(var j = 0; j < (this._canvas.width / 2); j++) {
-        this.putPixel(j, i, 0xFFFF0000);
-      }
-    }
-    // Quadrant 2
-    for(var i = 0; i < (this._canvas.height / 2); i++) {
-      for(var j = -(this._canvas.width / 2); j < 0; j++) {
-        this.putPixel(j, i, 0xFF00FF00);
-      }
-    }
-    // Quadrant 3
-    for(var i = -(this._canvas.height / 2); i < 0; i++) {
-      for(var j = -(this._canvas.width / 2); j < 0; j++) {
-        this.putPixel(j, i, 0xFF0000FF);
-      }
-    }
-    // Quadrant 3
-    for(var i = -(this._canvas.height / 2); i < 0; i++) {
-      for(var j = 0; j < (this._canvas.width / 2); j++) {
-        this.putPixel(j, i, 0xFF000000);
-      }
-    }
+    this._circle.render(timestamp)
     this._endFrame()
-    // requestAnimationFrame(render)
+    requestAnimationFrame(this.render.bind(this))
   }
 }
